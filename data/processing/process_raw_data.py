@@ -196,7 +196,7 @@ class ProcessData:
         document_map = dict()
         dataset = dict()
         labels = list()
-        document_dataset = os.path.join(self.result_dir, f'00-descriptive-dataset-raw.pickle')
+        document_dataset = os.path.join(self.result_dir, f'descriptive-raw-dataset.pickle')
         if not os.path.exists(document_dataset):
             for idx, document in enumerate(self.reader):
                 document_map[document['data_id']] = idx

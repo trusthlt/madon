@@ -7,7 +7,7 @@ import pandas as pd
 
 
 class CreateDataset:
-    def __init__(self, ds_path: str, is_meta: bool=True, split: bool=False):
+    def __init__(self, ds_path: str, is_gold: bool=True, split: bool=False):
         """
         initializer of the dataset creator object
         :param ds_path: Dataset path
@@ -16,19 +16,19 @@ class CreateDataset:
         """
         self.ds_path = ds_path
         self.ds_name = None
-        self.is_meta = is_meta
+        self.is_gold = is_gold
         self.split = split
-        self.ds_idx = 0 if self.is_meta else 1
+        # self.ds_idx = 0 if self.is_meta else 1
         self.experimental_label_map = self.set_exp_label_map()
         self.raw_dataset = self.get_raw_data()
         self.gold_label_map = self.raw_dataset["labels"]
-        self.dataset_type = 'meta' if self.is_meta else 'gold'
+        self.dataset_type = 'gold' if self.is_gold else 'fine-grained'
         self.result_path = os.path.join(self.ds_path, self.dataset_type)
         self.check_dir(self.result_path)
         self.dataset = self.__main__()
 
     def get_raw_data(self):
-        meta_path = os.path.join(self.ds_path, '00-descriptive-dataset-raw.pickle')
+        meta_path = os.path.join(self.ds_path, 'descriptive-raw-dataset.pickle')
         return pickle.load(open(meta_path, 'rb'))
 
     @staticmethod
@@ -163,12 +163,13 @@ class CreateDataset:
 
         return document_paragraphs
 
-    def create_meta_informative_dataset(self) -> dict:
+    def create_informative_dataset(self) -> dict:
         """
         Method is used to create the gold dataset (not the experimental dataset)
         :return: dictionary for the gold dataset
         """
-        ds_path = os.path.join(self.result_path, f'GOLD_DATA.pickle')
+
+        ds_path = os.path.join(self.result_path, f'dataset-access-by-id.pickle')
         gold_dataset = dict()
         if not os.path.exists(ds_path):
             for doc_id, doc in self.raw_dataset['dataset'].items():
@@ -191,21 +192,21 @@ class CreateDataset:
             'argument_info': list(), 'tokenized_text': list()
         }
 
-        self.ds_name = f'0{self.ds_idx}-dataset-{self.dataset_type}'
+        self.ds_name = f'dataset-{self.dataset_type}-all'
         dataset_path = os.path.join(self.result_path, self.ds_name)
-        dataset_descriptive_path = os.path.join(self.result_path, f'{self.ds_name}-descriptive')
+        dataset_descriptive_path = os.path.join(self.result_path, f'descriptive-{self.ds_name}')
 
         map_reverse = {v: k for k, v in self.raw_dataset['doc_map'].items()}
         if not os.path.exists(dataset_path):
-            meta_dataset = self.create_meta_informative_dataset()
-            for doc_id, doc_details in meta_dataset.items():
+            informative_set = self.create_informative_dataset()
+            for doc_id, doc_details in informative_set.items():
                 dataset['doc_id'].append(doc_id)
                 dataset['doc_name'].append(map_reverse[doc_id])
 
                 labels = list()
                 arguments = list()
                 for label, argument in zip(doc_details['labels'], doc_details['argument_info']):
-                    if not self.is_meta:
+                    if self.is_gold:
                         # something to be discussed later
                         current_info = self.update_labels(label, argument)
                         labels.append(current_info['labels'])
@@ -241,7 +242,7 @@ class CreateDataset:
         :param ds_path: path where to save the dataset
         :return: dictionary of the train, dev and test sets
         """
-        check_path = os.path.join(ds_path, f'0{self.ds_idx}-{self.dataset_type}-train.csv') # all will be prepared together. If one does not exist, then all don't too.
+        check_path = os.path.join(ds_path, f'train.csv') # all will be prepared together. If one does not exist, then all don't too.
         result_dict = {'train': None, 'dev': None, 'test': None}
         if not os.path.exists(check_path):
             doc_dict = {
@@ -281,10 +282,10 @@ class CreateDataset:
                 ## last update, we use doc names as ids from now on
                 current_dataset.drop(columns=['doc_id'], inplace=True)
                 current_dataset.rename(columns={'doc_name': 'doc_id'}, inplace=True)
-                file_path = os.path.join(ds_path, f'0{self.ds_idx}-{self.dataset_type}-{k}.csv')
+                file_path = os.path.join(ds_path, f'{k}.csv')
                 current_dataset.to_csv(file_path, index=False)
         for k in result_dict.keys():
-            file_path = os.path.join(ds_path, f'0{self.ds_idx}-{self.dataset_type}-{k}.csv')
+            file_path = os.path.join(ds_path, f'{k}.csv')
             result_dict[k] = pd.read_csv(file_path, converters={'labels': literal_eval, 'result_labels': literal_eval, 'argument_info': literal_eval})
         return result_dict
 

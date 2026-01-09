@@ -81,7 +81,7 @@ class ReadData:
         Method functions as a main method for the class. It helps us eliminate redundant processing time.
         :return: list of datapoints by their file paths (curated, raw, annotations (will be used for scores))
         """
-        curated_dataset = os.path.join(self.result_dir, 'collected_data.pickle')
+        curated_dataset = os.path.join(self.result_dir, 'inception_data.pickle')
 
         if not os.path.exists(curated_dataset):
             curated_data = self.collect_curations()

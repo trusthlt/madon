@@ -13,7 +13,7 @@ def set_parameters() -> Namespace:
                         help='Result path will be used to collect experiment results')
 
     # Dataset Setup
-    parser.add_argument('--is_meta', required=False, action='store_true',
+    parser.add_argument('--is_gold', required=False, action='store_true',
                         help='Specifies what kind of dataset should be created (True -> Gold, False -> Experimental)')
     parser.add_argument('--split', required=False, action='store_true',
                         help='Dataset should be split or not')
