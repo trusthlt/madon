@@ -25,7 +25,7 @@ def __main__():
     # initialize the configuration at backend (choice of device, fixing the seed)
     configuration = Configuration(parameters)
 
-    dataset_obj = CreateDataset(ds_path, parameters['is_meta'], parameters['split'])
+    dataset_obj = CreateDataset(ds_path, parameters['is_gold'], parameters['split'])
 
     # process the features to create dataset for feature engineering
     proc_features = ProcessFeatures(dataset_obj, parameters=parameters)

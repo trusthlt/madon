@@ -23,14 +23,14 @@ def __main__():
     raw_data_process_obj = ProcessData(reader_obj, processed_dataset_folder)
     # dataset object to create either meta (with 15 arguments) or the gold (with 8 arguments) setup in MADON scenarios
     dataset_obj = CreateDataset(
-        processed_dataset_folder, parameters['is_meta'], parameters['split']
+        processed_dataset_folder, parameters['is_gold'], parameters['split']
     )
 
     if parameters['statistics']:
         # statistics object to perform some statistical analysis. It is optional, you need to set statistics parameter
         # true, in order to see the statistics process
         statistics_obj = DataStats(
-            reader_obj, raw_data_process_obj, dataset_obj, parameters['is_meta'], data_statistics_folder
+            reader_obj, raw_data_process_obj, dataset_obj, parameters['is_gold'], data_statistics_folder
         )
         statistics_obj.process()
 

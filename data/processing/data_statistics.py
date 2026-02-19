@@ -9,11 +9,11 @@ from spacy.tokens.doc import Counter
 
 
 class DataStats:
-    def __init__(self, reader_obj, process_data_obj, dataset_obj, is_meta, stats_folder):
+    def __init__(self, reader_obj, process_data_obj, dataset_obj, is_gold, stats_folder):
         self.reader_obj = reader_obj
         self.process_data_obj = process_data_obj
         self.dataset_obj = dataset_obj
-        self.is_meta = is_meta
+        self.is_gold = is_gold
         self.check_dir(stats_folder)
         self.stats_folder = stats_folder
 
@@ -67,12 +67,12 @@ class DataStats:
         Method is used to generate the table for argument counts per document
         :return: dataframe for the aforementioned table
         """
-        file_extension = 'meta' if self.is_meta else 'gold'
+        file_extension = 'meta' if not self.is_gold else 'gold'
 
         arg_stats_file = os.path.join(self.stats_folder, f'arg_stats_per_doc_{file_extension}.csv')
         if not os.path.exists(arg_stats_file):
             doc_stats = {'doc_id': list()}
-            label_map = self.process_data_obj.labels if self.is_meta else list(self.dataset_obj.experimental_label_map.values())
+            label_map = self.process_data_obj.labels if not self.is_gold else list(self.dataset_obj.experimental_label_map.values())
 
             doc_stats.update({label: list() for label in label_map})
             doc_stats.update({'overall': list(), 'result_type': list()})
@@ -84,7 +84,7 @@ class DataStats:
                 doc_stats['doc_id'].append(doc_name)
                 label_counter = {label:0 for label in label_map}
                 lab_count_auto = Counter([each['label'] for each in doc_data['argument_labels']])
-                auto_counter = lab_count_auto if self.is_meta else self.get_experimental_arguments(lab_count_auto)
+                auto_counter = lab_count_auto if not self.is_gold else self.get_experimental_arguments(lab_count_auto)
                 label_counter.update(auto_counter)
                 doc_stats['result_type'].append(self.get_result_type(doc_data['argument_labels']))
 
@@ -149,6 +149,9 @@ class DataStats:
         sns_map.get_figure().savefig(os.path.join(self.stats_folder, 'annotator_heatmap.png'))
         plt.close()
         return kappa
+
+    def collect_disagreements(self, arg_p_doc: pd.DataFrame):
+        pass
 
     @staticmethod
     def compute_observed(confusion_array: np.array) -> float:

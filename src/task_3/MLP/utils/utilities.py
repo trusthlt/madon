@@ -51,10 +51,12 @@ def set_parameters() -> Namespace:
                         help='Different scenarios are evaluated, and that is how we choose it')
 
     # Dataset Setup
-    parser.add_argument('--is_meta', required=False, action='store_true',
+    parser.add_argument('--is_gold', required=False, action='store_true',
                         help='Specifies what kind of dataset should be created (True -> Gold, False -> Experimental)')
     parser.add_argument('--split', required=False, action='store_true',
                         help='Dataset should be split or not')
+    parser.add_argument('--read_data', action='store_true', required=False,
+                        help='It is a key to call the raw data reader object and read the data (first process)')
 
 
     # outliers

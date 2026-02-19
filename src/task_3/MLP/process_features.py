@@ -20,11 +20,11 @@ class ProcessFeatures:
     def check_details(self):
         if not self.parameters["split"]:
             raise NotImplementedError('Feature Engineering part is done only with the split dataset (fine-grained')
-        if self.parameters['is_meta']:
+        if not self.parameters['is_gold']:
             raise NotImplementedError('Feature Engineering part is done only with the experimental labels')
 
     def get_descriptive_set(self):
-        descriptive_dataset_path = os.path.join(self.dataset_obj.result_path, self.dataset_obj.ds_name + '-descriptive.csv')
+        descriptive_dataset_path = os.path.join(self.dataset_obj.result_path, 'descriptive-'+self.dataset_obj.ds_name + '.csv')
         descriptive_dataset = pd.read_csv(
             descriptive_dataset_path,
             converters={
@@ -106,12 +106,12 @@ class ProcessFeatures:
             features_data = {
                 'dataset': dataset,
                 'lab2id': {'O - OVERALL - FORMALISTIC': 1, 'O - OVERALL - NON FORMALISTIC': 0}
-
             }
             with open(features_path, 'wb') as features:
                 pickle.dump(features_data, features)
         with open(features_path, 'rb') as features:
             features_data = pickle.load(features)
+
         return features_data['dataset'], features_data['lab2id']
 
 
