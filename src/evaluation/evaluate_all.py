@@ -51,6 +51,12 @@ def compute_binary_metrics(tp, fp, fn, tn):
     macro_f1 = (pos_f1 + neg_f1) / 2
 
     return {
+        "pos_precision": pos_precision,
+        "pos_recall": pos_recall,
+        "pos_f1": pos_f1,
+        "neg_precision": neg_precision,
+        "neg_recall": neg_recall,
+        "neg_f1": neg_f1,
         "macro_precision": macro_precision,
         "macro_recall": macro_recall,
         "macro_f1": macro_f1
@@ -85,7 +91,8 @@ def evaluate_binary(df, config_name, csv_filename=None, matrix=False):
     return metrics
 
 def average_binary_results(all_metrics, num_files):
-    avg_metrics = {"macro_precision": 0, "macro_recall": 0, "macro_f1": 0}
+    metric_names = list(next(iter(all_metrics.values())).keys())
+    avg_metrics = {metric: 0 for metric in metric_names}
 
     for m in all_metrics.values():
         for k in avg_metrics:
@@ -98,11 +105,8 @@ def average_binary_results(all_metrics, num_files):
 
 def compute_binary_std(all_metrics):
     """Compute standard deviation for binary classification metrics."""
-    metrics_values = {
-        "macro_precision": [],
-        "macro_recall": [],
-        "macro_f1": []
-    }
+    metric_names = list(next(iter(all_metrics.values())).keys())
+    metrics_values = {metric: [] for metric in metric_names}
     
     for file_metrics in all_metrics.values():
         for metric in metrics_values:
@@ -116,16 +120,35 @@ def compute_binary_std(all_metrics):
 
 def save_binary_to_csv(experiment, avg_metrics, out_path, std_metrics=None):
     if std_metrics:
-        headers = ["Experiment", "Macro Precision", "Macro Recall", "Macro F1", 
-                   "Macro Precision Std", "Macro Recall Std", "Macro F1 Std"]
+        headers = [
+            "Experiment",
+            "Pos Precision", "Pos Recall", "Pos F1",
+            "Neg Precision", "Neg Recall", "Neg F1",
+            "Macro Precision", "Macro Recall", "Macro F1",
+            "Pos Precision Std", "Pos Recall Std", "Pos F1 Std",
+            "Neg Precision Std", "Neg Recall Std", "Neg F1 Std",
+            "Macro Precision Std", "Macro Recall Std", "Macro F1 Std"
+        ]
         row = [experiment, 
+               avg_metrics["pos_precision"], avg_metrics["pos_recall"], avg_metrics["pos_f1"],
+               avg_metrics["neg_precision"], avg_metrics["neg_recall"], avg_metrics["neg_f1"],
                avg_metrics["macro_precision"], avg_metrics["macro_recall"], avg_metrics["macro_f1"],
+               std_metrics["pos_precision_std"], std_metrics["pos_recall_std"], std_metrics["pos_f1_std"],
+               std_metrics["neg_precision_std"], std_metrics["neg_recall_std"], std_metrics["neg_f1_std"],
                std_metrics["macro_precision_std"], std_metrics["macro_recall_std"], std_metrics["macro_f1_std"]]
     else:
-        headers = ["Experiment", "Macro Precision", "Macro Recall", "Macro F1"]
-        row = [experiment, avg_metrics["macro_precision"], avg_metrics["macro_recall"], avg_metrics["macro_f1"]]
+        headers = [
+            "Experiment",
+            "Pos Precision", "Pos Recall", "Pos F1",
+            "Neg Precision", "Neg Recall", "Neg F1",
+            "Macro Precision", "Macro Recall", "Macro F1"
+        ]
+        row = [experiment,
+               avg_metrics["pos_precision"], avg_metrics["pos_recall"], avg_metrics["pos_f1"],
+               avg_metrics["neg_precision"], avg_metrics["neg_recall"], avg_metrics["neg_f1"],
+               avg_metrics["macro_precision"], avg_metrics["macro_recall"], avg_metrics["macro_f1"]]
 
-    write_header = not os.path.exists(out_path)
+    write_header = (not os.path.exists(out_path)) or os.path.getsize(out_path) == 0
     df = pd.DataFrame([row], columns=headers)
     df.to_csv(out_path, mode='a', header=write_header, index=False)
 
@@ -410,7 +433,7 @@ def save_multilabel_to_csv(experiment, avg_dict, out_path, std_dict=None, includ
         
         rows = [pos_row, neg_row, avg_row]
 
-    write_header = not os.path.exists(out_path)
+    write_header = (not os.path.exists(out_path)) or os.path.getsize(out_path) == 0
     df = pd.DataFrame(rows, columns=headers)
     df.to_csv(out_path, mode='a', header=write_header, index=False)
 
@@ -471,28 +494,29 @@ def main():
                     print(f"{k.replace('_', ' ').title()}: {v:.2f}")
 
     elif args.config == 3:
+        include_full_metrics = args.pre_rec or bool(args.out_csv)
         multilabel_results = {}
         for i, csv_file in enumerate(args.csv_files, 1):
             df = pd.read_csv(csv_file, dtype={'Gold Labels': str, 'Predicted Labels': str})
             multilabel_results[csv_file] = evaluate_multilabel(
                 df, 
-                include_precision_recall=args.pre_rec,
+                include_precision_recall=include_full_metrics,
                 generate_confusion=args.confusion_3,
                 csv_filename=csv_file
             )
 
-        avg_results = average_multilabel_results(multilabel_results, len(args.csv_files), include_precision_recall=args.pre_rec)
-        std_results = compute_multilabel_std(multilabel_results, include_precision_recall=args.pre_rec) if args.std_dev else None
+        avg_results = average_multilabel_results(multilabel_results, len(args.csv_files), include_precision_recall=include_full_metrics)
+        std_results = compute_multilabel_std(multilabel_results, include_precision_recall=include_full_metrics) if args.std_dev else None
         experiment_name = get_experiment_name(args.csv_files)
         experiment_name = experiment_name.replace("_seed", "")
         experiment_name = experiment_name.replace("-seed", "")
         
         if args.out_csv:
-            save_multilabel_to_csv(experiment_name, avg_results, args.out_csv, std_results, include_precision_recall=args.pre_rec)
+            save_multilabel_to_csv(experiment_name, avg_results, args.out_csv, std_results, include_precision_recall=True)
         else:
             print("\n=== Average Multilabel Metrics ===")
             for label in LABELS + ["Macro Avg"]:
-                if args.pre_rec:
+                if include_full_metrics:
                     pos_f1, neg_f1, macro_f1, pos_prec, pos_rec, neg_prec, neg_rec, macro_prec, macro_rec = avg_results[label]
                     if args.std_dev and std_results:
                         pos_f1_std, neg_f1_std, macro_f1_std, pos_prec_std, pos_rec_std, neg_prec_std, neg_rec_std, macro_prec_std, macro_rec_std = std_results[label]
