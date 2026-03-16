@@ -47,11 +47,11 @@ def set_parameters() -> Namespace:
                         help='List for the dropouts. Notice the last element for the output, so no dropout.')
     parser.add_argument('--eval_all', required=False, action='store_true', default=False,
                         help='Helps us to evaluate all seed combinations for the inference setup')
-    parser.add_argument('--inference_choice', required=False, type=str, choices=['multilabel', 'finetune', 'finetune_filtered'],
+    parser.add_argument('--inference_choice', required=False, type=str, choices=['finetune', 'finetune_filtered'],
                         help='Different scenarios are evaluated, and that is how we choose it')
 
     # Dataset Setup
-    parser.add_argument('--is_meta', required=False, action='store_true',
+    parser.add_argument('--is_gold', required=False, action='store_true',
                         help='Specifies what kind of dataset should be created (True -> Gold, False -> Experimental)')
     parser.add_argument('--split', required=False, action='store_true',
                         help='Dataset should be split or not')

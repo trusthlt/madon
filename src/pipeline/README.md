@@ -119,7 +119,7 @@ For a detailed description of the MLP’s architecture and feature engineering p
     * Go to [utilities.py](utils/utilities.py);
     * Find inference_choice argument in set_parameters() function and add it there:
     ```python
-      parser.add_argument('--inference_choice', required=False, type=str, choices=['multilabel', 'finetune', 'finetune_filtered', 'X'],
+      parser.add_argument('--inference_choice', required=False, type=str, choices=['finetune', 'finetune_filtered', 'X'],
                         help='Different scenarios are evaluated, and that is how we choose it')
     ```
     The given "X" in the above line, which is in the list that is assigned to choices argument, will be your file_key name. It is arbitrary;
