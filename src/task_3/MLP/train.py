@@ -94,7 +94,6 @@ class Trainer:
         :return: tuple of best f1 score, and the epoch according to the training history
         """
         experiment_path = os.path.join(self.parameters['result_path'], f'exp_{self.parameters["exp_num"]}', f'seed_{self.parameters["seed"]}')
-        input(experiment_path)
         self.check_dir(experiment_path)
         min_loss = 100
         if not 'model_checkpoints' in os.listdir(experiment_path):
@@ -223,18 +222,15 @@ class Trainer:
         inference_info = f'_inference_{self.parameters["inference_choice"]}' if inference else ''
         experiment_path = os.path.join(self.parameters['result_path'], f'exp_{self.parameters["exp_num"]}', f'seed_{self.parameters["seed"]}')
         test_predictions_path = os.path.join(experiment_path, f'predictions{inference_info}_fp.csv')
+
         test_data = self.feat_proc_obj.features['test']
         result = {
-            # 'doc_id': test_data['doc_id'],
             'doc_id': test_data['doc_id'],
-            # 'vals': [self.feat_proc_obj.lab2id[each] for each in test_data['holistic_target']],
             'Gold Labels': targets,
             'Predicted Labels': predictions,
         }
         pd.DataFrame(result).to_csv(test_predictions_path, index=False)
-        # print(pd.DataFrame(result))
-        # print(test_predictions_path, test_data)
-        # input('hele hele')
+
 
     def get_best(self, experiment_path: str) -> tuple:
         """
@@ -285,16 +281,20 @@ class Trainer:
         :return: None
         """
 
-        experiment_path = os.path.join(self.parameters['result_path'], f'exp_{self.parameters["exp_num"]}', f'seed_{seed_info}')
-        # self.check_dir(experiment_path)
+        experiment_path = os.path.join(
+            self.parameters['result_path'], f'exp_{self.parameters["exp_num"]}', f'seed_{seed_info}'
+        )
         ckpt_path = os.path.join(experiment_path, 'model_checkpoints')
         best_f1, min_loss, best_epoch = self.get_best(experiment_path)
         model_path = os.path.join(ckpt_path, f'model_{best_epoch}.pkl')
         self.model.load_state_dict(torch.load(model_path, weights_only=True))
         self.model.to(self.config_obj.device)
         shuffle_val = False if split=='test' else True
-        print(f'inference: {inference}')
-        dev_loss, dev_acc, dev_f1, precision, recall = self.evaluation(split, shuffle_val=shuffle_val, inference=inference, seed_info=seed_info)
+
+        self.config_obj.seed_everything()
+        dev_loss, dev_acc, dev_f1, precision, recall = self.evaluation(
+            split, shuffle_val=shuffle_val, inference=inference, seed_info=seed_info
+        )
 
         print(f'Dev loss: {dev_loss}, Dev acc: {dev_acc}, Dev f1: {dev_f1}')
         return dev_loss, dev_acc, dev_f1, precision, recall
@@ -304,13 +304,13 @@ class Trainer:
             loss_val, acc_val, f1_val, precision, recall = self.evaluate_best(split=split, inference=inference, seed_info=self.parameters['seed'])
             return loss_val, acc_val, f1_val, precision, recall
         generic_experiment_path = os.path.join(self.parameters['result_path'], f'exp_{self.parameters["exp_num"]}')
-        f_path = os.path.join(generic_experiment_path, f'{self.parameters["inference_choice"]}_seed_inference_results_fp.csv')
-        # print(f_path)
-        # input('jjjj')
+        f_path = os.path.join(generic_experiment_path, f'{self.parameters["inference_choice"]}_{self.parameters["seed"]}_inference_results_fp.csv')
+
         if not os.path.exists(f_path):
             results_dict = {'seeds': [32, 42, 52], 'precision': list(), 'recall': list(), 'f1': list(), 'accuracy': list()}
 
             for feature_seed in [32, 42, 52]:
+
                 self.parameters['seed'] = feature_seed
                 loss_val, acc_val, f1_val, precision, recall = self.evaluate_best(split=split, inference=inference, seed_info=feature_seed)
                 results_dict['precision'].append(precision)

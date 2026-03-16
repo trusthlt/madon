@@ -141,12 +141,9 @@ class ProcessFeatures:
         # 3rd scenario
         filename = self.getfname(seed_info)
 
-        # inference_path = os.path.join(self.parameters['data_path'], 'gold_data', 'inference_data',
-        # f'multilabel_llama_base_asy_filtered_seed_{seed_info}_predicted_label_counts.pkl')
-        inference_path = os.path.join(self.parameters['data_path'], 'gold_data', 'inference_data',filename)
+        inference_path = os.path.join(self.dataset_obj.ds_path, 'gold', 'inference_data',filename)
         with open(inference_path, 'rb') as f:
             data = pickle.load(f)
-
         if ds_type != 'test':
             raise NotImplementedError('Inference is done only with test dataset')
 
@@ -155,11 +152,16 @@ class ProcessFeatures:
         for idx, doc_id in enumerate(feature_set['doc_id']):
             overall = sum(data[doc_id].values())
             subframe = self.descriptive_set[self.descriptive_set['doc_name'] == doc_id]
+            # print('bach')
+            # print(subframe)
             tok_text  = subframe['tokenized_text'].item()
+            args_infos = subframe['argument_info'].item()
             all_pars_doc = 0
-            for paragraph in tok_text:
+            arg_par_doc = 0
+            for paragraph, arginfo in zip(tok_text, args_infos):
                 par_len = sum([len(sentence) for sentence in paragraph])
                 all_pars_doc += par_len
+                arg_par_doc += sum([len(paragraph[idx]) for idx, argss in enumerate(arginfo) if argss])
 
 
             num_arguments = 0
@@ -170,16 +172,13 @@ class ProcessFeatures:
             feature_set['num_args'][idx] = num_arguments
 
             avg_par_len = all_pars_doc / len(tok_text)
-
             feature_set['avg_arg_len'][idx] = avg_par_len if feature_set['num_args'][idx] else 0
 
         return pd.DataFrame(feature_set)
 
     def getfname(self, seed_info):
-        print(self.parameters['inference_choice'])
-        if self.parameters['inference_choice'] == 'multilabel':
-            return f'multilabel_llama_base_asy_filtered_seed_{seed_info}_predicted_label_counts.pkl'
-        elif self.parameters['inference_choice'] == 'finetune':
+
+        if self.parameters['inference_choice'] == 'finetune':
             return f'paragraph-multilabel-llama-base-full-finetune-asy-seed-{seed_info}_predicted_label_counts.pkl'
         elif self.parameters['inference_choice'] == 'finetune_filtered':
             return f'paragraph-multilabel-llama-base-full-finetune-asy-seed-{seed_info}_filtered_predicted_label_counts.pkl'

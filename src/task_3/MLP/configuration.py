@@ -15,6 +15,7 @@ class Configuration:
         self.device = self.set_device()
         self.seed_everything()
 
+
     def set_device(self) -> str:
         """
         Method is utilized to set the device based on the is_mac parameter, since macs don't have cuda
@@ -30,6 +31,7 @@ class Configuration:
         In order to fix every process to the same seed, we initialize everything's seed here
         :return: None
         """
+        print(f'seeding everything with new seed: {self.parameters["seed"]}')
         random.seed(self.parameters['seed'])
         os.environ['PYTHONHASHSEED'] = str(self.parameters['seed'])
         np.random.seed(self.parameters['seed'])
