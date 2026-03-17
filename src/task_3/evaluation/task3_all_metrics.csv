@@ -1,0 +1,12 @@
+Experiment,Pos Precision,Pos Recall,Pos F1,Neg Precision,Neg Recall,Neg F1,Macro Precision,Macro Recall,Macro F1
+holistic-formalism-llama-base-peft,64.51,96.08,77.19,80.56,25.0,38.06,72.53,60.54,57.62
+holistic-formalism-llama-base,78.08,84.31,80.99,76.09,66.67,70.81,77.09,75.49,75.9
+holistic-formalism-llama-cpt-peft,65.88,98.04,78.76,93.33,27.78,41.88,79.6,62.91,60.32
+holistic-formalism-llama-cpt,79.1,88.24,83.31,80.68,66.67,72.61,79.89,77.45,77.96
+holistic-formalism-modernbert,78.73,78.43,78.45,69.49,69.44,69.21,74.11,73.94,73.83
+holistic-formalism-modernbert-cpt,84.64,86.27,85.43,80.05,77.78,78.86,82.35,82.03,82.15
+random_predictions.csv,55.56,29.41,38.46,40.0,66.67,50.0,47.78,48.04,44.23
+majority_predictions.csv,58.62,100.0,73.91,0.0,0.0,0.0,29.31,50.0,36.96
+pipeline_1,85.34,88.24,86.65,82.14,77.78,79.66,83.74,83.01,83.16
+pipeline_2,81.81,96.08,88.33,92.59,69.44,79.19,87.2,82.76,83.76
+Gold_MLP,92.37,94.12,93.22,91.41,88.89,90.1,91.89,91.5,91.66
