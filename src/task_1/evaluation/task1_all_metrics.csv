@@ -1,0 +1,9 @@
+Experiment,Pos Precision,Pos Recall,Pos F1,Neg Precision,Neg Recall,Neg F1,Macro Precision,Macro Recall,Macro F1
+paragraph-binary-llama-base-peft,17.03,41.67,22.95,88.89,68.57,76.53,52.96,55.12,49.74
+paragraph-binary-llama-standard,80.82,52.14,63.32,93.27,98.17,95.65,87.05,75.15,79.49
+paragraph-binary-llama-cpt-peft,18.78,43.33,25.87,88.61,67.97,76.66,53.7,55.65,51.27
+paragraph-binary-llama-cpt,80.72,32.86,46.7,90.86,98.84,94.68,85.79,65.85,70.69
+paragraph-binary-modernbert,77.83,62.14,69.07,94.56,97.39,95.95,86.19,79.77,82.51
+paragraph-binary-modernbert-cpt,77.42,62.86,69.33,94.65,97.28,95.95,86.04,80.07,82.64
+zero_predictions.csv,0.0,0.0,0.0,87.1,100.0,93.1,43.55,50.0,46.55
+random_predictions.csv,13.2,52.14,21.07,87.41,49.21,62.97,50.3,50.67,42.02
